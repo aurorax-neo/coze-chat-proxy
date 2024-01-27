@@ -2,13 +2,15 @@
 
 ## 接口
 
-###### 支持流和json
+#### /v1/chat/completions
+
+###### 支持返回stream和json
 
 ```
 http://<ip>:<port>/v1/chat/completions
 ```
 
-### 示例
+##### 示例
 
 ```
 curl --location --request POST 'http://127.0.0.1:8080/v1/chat/completions' \
@@ -26,6 +28,31 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/chat/completions' \
     "stream": false,
 }'
 ```
+
+#### /v1/images/generations
+
+###### 仅支持返回json
+
+```
+http://<ip>:<port>/v1/images/generations
+```
+
+##### 示例
+
+```
+curl --location --request POST 'http://127.0.0.1:8080/v1/images/generations' \
+--header 'Authorization: Bearer ****' \
+--header 'User-Agent: Apifox/1.0.0 (https://apifox.com)' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "model": "dall-e-3",
+    "prompt": "A cute dog",
+    "n": 1,
+    "size": "1024x1024"
+}'
+```
+
+###### 注：此接口coze bot 需特殊设置，参考 [how_to_create_coze_agent.md](https://github.com/Feiyuyu0503/free-dall-e-proxy/blob/main/docs/how_to_create_coze_agent) 此配置稳定出图
 
 ## 如何使用
 
@@ -51,6 +78,9 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/chat/completions' \
 4. `AUTH_TOKEN`:`123456` 请求头校验的值（前后端统一）,配置此参数后，每次发起请求时请求头加上`Authorization`
    参数，即`header`中添加 `Authorization：Bearer 123456`
 
+###### 也可使用与程序同目录下 `.env` 文件配置上述字段
+
+
 ### bot.json配置
 
 ###### 支持多个机器人，添加到json列表即可，同模型（model）轮训请求
@@ -58,7 +88,14 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/chat/completions' \
 ```
 [
   {
-    "model": "gpt-3.5-turbo", // bot模型可自定义，与请求接口保持一致
+    "model": "gpt-3.5-turbo", // bot模型可自定义，与请求接口保持一致 可自定义
+    "bot_token": "MTI************", //见如何使用.3
+    "coze_bot_id": "120**********", //见如何使用.2
+    "guid_id": "103************", //见如何使用.4
+    "channel_id": "120*********" //在所在服务器 创建频道 记录id
+  },
+  {
+    "model": "dall-e-3", // bot模型可自定义，与请求接口保持一致 可自定义
     "bot_token": "MTI************", //见如何使用.3
     "coze_bot_id": "120**********", //见如何使用.2
     "guid_id": "103************", //见如何使用.4
