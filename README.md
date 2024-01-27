@@ -52,7 +52,7 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/images/generations' \
 }'
 ```
 
-###### 注：此接口coze bot 需特殊设置，参考 [how_to_create_coze_agent.md](https://github.com/Feiyuyu0503/free-dall-e-proxy/blob/main/docs/how_to_create_coze_agent) 此配置稳定出图
+###### 注：此接口coze bot 需特殊设置，参考 [how_to_create_coze_agent](https://github.com/Feiyuyu0503/free-dall-e-proxy/blob/main/docs/how_to_create_coze_agent.md) 此配置稳定出图
 
 ## 如何使用
 
