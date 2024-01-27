@@ -29,7 +29,7 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.DcBot, retryCount int)
 		})
 	}
 
-	replyChan, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
+	replyChan, _, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
 	defer bot.CleanChans(sentMsg.ID)
 
 	// 流式返回

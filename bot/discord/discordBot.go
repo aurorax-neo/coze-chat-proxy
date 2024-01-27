@@ -11,25 +11,27 @@ import (
 )
 
 type DcBot struct {
-	Model          string                 `json:"model"`
-	BotToken       string                 `json:"bot_token"`
-	CozeBotId      string                 `json:"coze_bot_id"`
-	GuildId        string                 `json:"guild_id"`
-	ChannelID      string                 `json:"channel_id"`
-	RepliesChans   map[string]chan string `json:"-"`
-	ReplyStopChans map[string]chan string `json:"-"`
-	Session        *discordgo.Session     `json:"-"`
+	Model              string                                  `json:"model"`
+	BotToken           string                                  `json:"bot_token"`
+	CozeBotId          string                                  `json:"coze_bot_id"`
+	GuildId            string                                  `json:"guild_id"`
+	ChannelID          string                                  `json:"channel_id"`
+	ReplyContentsChans map[string]chan string                  `json:"-"`
+	ReplyEmbedsChans   map[string]chan *discordgo.MessageEmbed `json:"-"`
+	ReplyStopChans     map[string]chan string                  `json:"-"`
+	Session            *discordgo.Session                      `json:"-"`
 }
 
 func NewDcBot(bot DcBot) *DcBot {
 	return &DcBot{
-		Model:          bot.Model,
-		BotToken:       bot.BotToken,
-		CozeBotId:      bot.CozeBotId,
-		GuildId:        bot.GuildId,
-		ChannelID:      bot.ChannelID,
-		RepliesChans:   make(map[string]chan string),
-		ReplyStopChans: make(map[string]chan string),
+		Model:              bot.Model,
+		BotToken:           bot.BotToken,
+		CozeBotId:          bot.CozeBotId,
+		GuildId:            bot.GuildId,
+		ChannelID:          bot.ChannelID,
+		ReplyContentsChans: make(map[string]chan string),
+		ReplyEmbedsChans:   make(map[string]chan *discordgo.MessageEmbed),
+		ReplyStopChans:     make(map[string]chan string),
 	}
 
 }
@@ -68,19 +70,29 @@ func (dcBot *DcBot) StartBot(ctx context.Context) {
 }
 
 func (dcBot *DcBot) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
-	if m.Author.ID == s.State.User.ID {
+
+	if m.Author != nil && s.State.User != nil && m.Author.ID == s.State.User.ID {
 		return
 	}
 
 	// 检查消息是否是对我们的回复
 	for _, mention := range m.Mentions {
 		if mention.ID == s.State.User.ID {
-			if replyChan, exists := dcBot.RepliesChans[m.ReferencedMessage.ID]; exists {
-				replyChan <- m.Content
-				if len(m.Message.Components) > 0 {
-					stopChan := dcBot.ReplyStopChans[m.ReferencedMessage.ID]
-					stopChan <- m.ReferencedMessage.ID
+
+			// Embeds
+			if embedChan, exists := dcBot.ReplyEmbedsChans[m.ReferencedMessage.ID]; exists {
+				for _, embed := range m.Embeds {
+					embedChan <- embed
 				}
+			}
+			// Content
+			if contentChan, exists := dcBot.ReplyContentsChans[m.ReferencedMessage.ID]; exists {
+				contentChan <- m.Content
+			}
+			// Components
+			if len(m.Message.Components) > 0 {
+				stopChan := dcBot.ReplyStopChans[m.ReferencedMessage.ID]
+				stopChan <- m.ReferencedMessage.ID
 			}
 			break
 		}
@@ -101,18 +113,22 @@ func (dcBot *DcBot) SendMessage(message string) (*discordgo.Message, error) {
 	return sentMsg, nil
 }
 
-func (dcBot *DcBot) ReturnChainProcessed(msgId string) (chan string, chan string) {
+func (dcBot *DcBot) ReturnChainProcessed(msgId string) (chan string, chan *discordgo.MessageEmbed, chan string) {
 	// 返回的消息
-	replyChan := make(chan string)
-	dcBot.RepliesChans[msgId] = replyChan
+	contentsChan := make(chan string)
+	dcBot.ReplyContentsChans[msgId] = contentsChan
+	// 返回的附件
+	embedsChan := make(chan *discordgo.MessageEmbed)
+	dcBot.ReplyEmbedsChans[msgId] = embedsChan
 	// 返回停止消息
 	stopChan := make(chan string)
 	dcBot.ReplyStopChans[msgId] = stopChan
-	return replyChan, stopChan
+	return contentsChan, embedsChan, stopChan
 }
 
 func (dcBot *DcBot) CleanChans(msgId string) {
-	delete(dcBot.RepliesChans, msgId)
+	delete(dcBot.ReplyEmbedsChans, msgId)
+	delete(dcBot.ReplyContentsChans, msgId)
 	delete(dcBot.ReplyStopChans, msgId)
 }
 

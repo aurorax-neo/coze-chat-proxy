@@ -3,6 +3,7 @@ package router
 import (
 	"coze-chat-proxy/middleware"
 	"coze-chat-proxy/v1/chat"
+	"coze-chat-proxy/v1/images"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,6 +16,7 @@ func SetRouter(router *gin.Engine) {
 	v1Router.Use(middleware.V1Response)
 	v1Router.Use(middleware.V1Auth)
 	v1Router.POST("/chat/completions", chat.Completions)
+	v1Router.POST("/images/generations", images.Generations)
 }
 
 func Index(c *gin.Context) {
