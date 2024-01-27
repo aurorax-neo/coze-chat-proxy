@@ -25,20 +25,24 @@ func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.DcBot, retryCount in
 		})
 	}
 
-	_, embedsChan, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
+	messageChans, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
 	defer bot.CleanChans(sentMsg.ID)
 
 	for {
 		select {
-		case embed := <-embedsChan:
+		case messageChan := <-messageChans:
+			if len(messageChan.Embeds) == 0 {
+				continue
+			}
 			dalle3Data := Dalle3RespData{
 				RevisedPrompt: apiReq.Prompt,
-				Url:           embed.Image.URL,
+				Url:           messageChan.Embeds[0].Image.URL,
 			}
 			dalle3Resp := &Dalle3Resp{
 				Data: []Dalle3RespData{dalle3Data},
 			}
 			c.JSON(http.StatusOK, dalle3Resp)
+			return
 		case <-stopChan:
 			return
 		}

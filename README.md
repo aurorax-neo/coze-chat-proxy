@@ -38,7 +38,6 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/chat/completions' \
 7. 配置环境变量，并启动本项目。
 8. 访问接口地址即可开始调试。
 
-
 ## 配置
 
 ### 环境变量

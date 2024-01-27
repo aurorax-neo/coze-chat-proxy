@@ -6,6 +6,7 @@ import (
 	v1 "coze-chat-proxy/v1"
 	"coze-chat-proxy/v1/chat/apireq"
 	"coze-chat-proxy/v1/chat/apiresp"
+	"github.com/bwmarrin/discordgo"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -29,24 +30,26 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.DcBot, retryCount int)
 		})
 	}
 
-	replyChan, _, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
+	messageChan, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
 	defer bot.CleanChans(sentMsg.ID)
 
 	// 流式返回
 	if apiReq.Stream {
-		__CompletionsStream(c, apiReq, replyChan, stopChan)
+		__CompletionsStream(c, apiReq, messageChan, stopChan)
 	} else { // 非流式回应
-		__CompletionsNoStream(c, apiReq, replyChan, stopChan)
+		__CompletionsNoStream(c, apiReq, messageChan, stopChan)
 	}
 }
 
-func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, replyChan chan string, stopChan chan string) {
+func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *discordgo.MessageUpdate, stopChan chan string) {
 	// 响应id
 	id := v1.GenerateID(29)
 	strLen := 0
 	c.Stream(func(w io.Writer) bool {
 		select {
-		case reply := <-replyChan:
+		case message := <-messageChan:
+			// 如果回复为空则返回
+			reply := message.Content
 			// 如果回复为空则返回
 			if reply == "" || strLen == len(reply) || len(reply) == 0 {
 				return true
@@ -112,11 +115,13 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, replyChan chan stri
 
 }
 
-func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan string, stopChan chan string) {
+func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *discordgo.MessageUpdate, stopChan chan string) {
 	content := ""
 	for {
 		select {
-		case reply := <-replyChan:
+		case message := <-replyChan:
+			// 如果回复为空则返回
+			reply := message.Content
 			// 如果回复为空则返回
 			if reply == "" || len(reply) == 0 {
 				continue
