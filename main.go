@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"coze-chat-proxy/common"
+	"coze-chat-proxy/config"
 	"coze-chat-proxy/logger"
 	"coze-chat-proxy/router"
 	"errors"
@@ -10,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
@@ -27,9 +27,12 @@ func main() {
 	router.SetRouter(server)
 
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(8080),
+		Addr:    ":" + config.CONFIG.ServerPort,
 		Handler: server,
 	}
+
+	// 提示服务启动
+	logger.Logger.Info("HTTP server is running on port " + config.CONFIG.ServerPort)
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

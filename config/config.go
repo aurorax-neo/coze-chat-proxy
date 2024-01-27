@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	LogLevel  string
-	BotConfig string
-	AuthToken string
+	LogLevel   string
+	ServerPort string
+	BotConfig  string
+	AuthToken  string
 }
 
 var CONFIG *Config
@@ -23,6 +24,11 @@ func init() {
 	CONFIG.LogLevel = os.Getenv("LOG_LEVEL")
 	if CONFIG.LogLevel == "" {
 		CONFIG.LogLevel = "info"
+	}
+	// SERVER_PORT
+	CONFIG.ServerPort = os.Getenv("SERVER_PORT")
+	if CONFIG.ServerPort == "" {
+		CONFIG.ServerPort = "8080"
 	}
 	// BOT_CONFIG
 	CONFIG.BotConfig = os.Getenv("BOT_CONFIG")
