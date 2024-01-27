@@ -44,6 +44,9 @@ func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.DcBot, retryCount in
 			c.JSON(http.StatusOK, dalle3Resp)
 			return
 		case <-stopChan:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"detail": "no data generated",
+			})
 			return
 		}
 	}
