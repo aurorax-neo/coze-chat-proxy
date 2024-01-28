@@ -70,6 +70,6 @@ func (botTool *BotTool) GetBotByModel(model string) *discord.ProxyBot {
 		return nil
 	}
 	bot := db.GetBot()
-	logger.Logger.Info("model: " + bot.Model + "coze_bot id: " + bot.CozeBotId + " guild_id: " + bot.GuildId + " channel_id: " + bot.ChannelID)
+	logger.Logger.Info("model: " + bot.Model + " coze_bot id: " + bot.CozeBotId + " guild_id: " + bot.GuildId + " channel_id: " + bot.ChannelID)
 	return bot
 }
