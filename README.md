@@ -69,14 +69,14 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/images/generations' \
 
 ### 环境变量
 
-1. `LOG_LEVEL：info`  日志等级
+1. `LOG_LEVEL：info`  日志等级，默认` info`
 
-2. `SERVER_PORT：8080`  服务端口
+2. `SERVER_PORT：8080`  服务端口,，默认`8080`
 
-3. `BOT_CONFIG：bot.json` discord-bot配置文件
+3. `BOT_CONFIG：bot.json` discord-bot配置文件，默认`bot.json`
 
 4. `AUTH_TOKEN`:`123456` 请求头校验的值（前后端统一）,配置此参数后，每次发起请求时请求头加上`Authorization`
-   参数，即`header`中添加 `Authorization：Bearer 123456`
+   参数，即`header`中添加 `Authorization：Bearer 123456`，默认`1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ`
 
 ###### 也可使用与程序同目录下 `.env` 文件配置上述字段
 
