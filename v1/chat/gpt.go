@@ -109,6 +109,7 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *d
 				return true
 			}
 			c.SSEvent("", string(bytes))
+			c.SSEvent("", "[DONE]")
 			return false // 关闭流式连接
 		}
 	})
