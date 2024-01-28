@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.DcBot, retryCount int) {
+func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.ProxyBot, retryCount int) {
 
 	// 遍历 req.Messages 拼接 newMessages
 	newMessages := ""

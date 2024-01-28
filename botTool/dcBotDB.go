@@ -4,33 +4,33 @@ import (
 	"coze-chat-proxy/bot/discord"
 )
 
-type DcBotDB struct {
-	index  int
-	dcBots []*discord.DcBot
+type ProxyBotDB struct {
+	index     int
+	proxyBots []*discord.ProxyBot
 }
 
-func NewDcBotDB() *DcBotDB {
-	return &DcBotDB{
-		index:  0,
-		dcBots: make([]*discord.DcBot, 0),
+func NewDcBotDB() *ProxyBotDB {
+	return &ProxyBotDB{
+		index:     0,
+		proxyBots: make([]*discord.ProxyBot, 0),
 	}
 }
 
-func (dcBotDB *DcBotDB) AddBot(bot *discord.DcBot) {
-	if dcBotDB.dcBots == nil {
-		dcBotDB.dcBots = make([]*discord.DcBot, 0)
+func (dcBotDB *ProxyBotDB) AddBot(bot *discord.ProxyBot) {
+	if dcBotDB.proxyBots == nil {
+		dcBotDB.proxyBots = make([]*discord.ProxyBot, 0)
 	}
-	dcBotDB.dcBots = append(dcBotDB.dcBots, bot)
+	dcBotDB.proxyBots = append(dcBotDB.proxyBots, bot)
 }
 
-func (dcBotDB *DcBotDB) GetBot() *discord.DcBot {
+func (dcBotDB *ProxyBotDB) GetBot() *discord.ProxyBot {
 	// 如果账号已经被使用完毕，那么就从头开始使用
-	if dcBotDB.index == len(dcBotDB.dcBots) {
+	if dcBotDB.index == len(dcBotDB.proxyBots) {
 		dcBotDB.index = 0
-	} else if dcBotDB.index > len(dcBotDB.dcBots) { // 如果账号索引超过了账号数量，那么就返回nil
+	} else if dcBotDB.index > len(dcBotDB.proxyBots) { // 如果账号索引超过了账号数量，那么就返回nil
 		return nil
 	}
-	bot := dcBotDB.dcBots[dcBotDB.index]
+	bot := dcBotDB.proxyBots[dcBotDB.index]
 	dcBotDB.index++
 	return bot
 }

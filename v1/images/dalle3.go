@@ -16,7 +16,7 @@ type Dalle3RespData struct {
 	Url           string `json:"url"`
 }
 
-func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.DcBot, retryCount int) {
+func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.ProxyBot, retryCount int) {
 	sentMsg, err := bot.SendMessage(apiReq.Prompt)
 	if err != nil {
 		logger.Logger.Fatal(err.Error())

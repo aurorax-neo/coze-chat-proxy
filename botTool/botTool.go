@@ -6,7 +6,6 @@ import (
 	"coze-chat-proxy/config"
 	"coze-chat-proxy/logger"
 	"encoding/json"
-	"log"
 	"os"
 )
 
@@ -18,7 +17,7 @@ func init() {
 }
 
 type BotTool struct {
-	BotDB map[string]*DcBotDB
+	ProxyBotPool map[string]*ProxyBotDB
 }
 
 func GetShareChatToolInstance() *BotTool {
@@ -32,40 +31,41 @@ func (botTool *BotTool) __GetBots1BotFile() {
 	// 读取json文件内容
 	bytes, err := os.ReadFile(config.CONFIG.BotConfig)
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Fatal(err.Error())
 	}
 
-	// Define a slice to hold the dcBots
-	var dcBots []discord.DcBot
+	// Define a slice to hold the proxyBots
+	var dcBots []discord.ProxyBot
 
-	// Unmarshal the JSON data into the dcBots slice
+	// Unmarshal the JSON data into the proxyBots slice
 	err = json.Unmarshal(bytes, &dcBots)
 	if err != nil {
 		logger.Logger.Fatal(err.Error())
 	}
-	botTool.BotDB = make(map[string]*DcBotDB)
+	botTool.ProxyBotPool = make(map[string]*ProxyBotDB)
 	// Get the context
 	ctx := common.GetContext()
-	// Loop through the dcBots
+	// Loop through the proxyBots
 	for _, i := range dcBots {
-		// Create a new DcBot
-		bot := discord.NewDcBot(i)
+		// Create a new ProxyBot
+		bot := discord.NewProxyBot(i)
 		// Start the bot
-		go bot.StartBot(ctx)
+		bot.StartProxyBot(ctx)
 		// Add the bot to the botDB
-		db, exists := botTool.BotDB[i.Model]
+		db, exists := botTool.ProxyBotPool[i.Model]
 		if !exists {
-			// If not, create a new DcBotDB
+			// If not, create a new ProxyBotDB
 			db = NewDcBotDB()
-			botTool.BotDB[i.Model] = db
+			// Add the ProxyBotDB to the botPool
+			botTool.ProxyBotPool[i.Model] = db
 		}
 		// Add the bot to the botDB
 		db.AddBot(bot)
 	}
 }
 
-func (botTool *BotTool) GetBotByModel(model string) *discord.DcBot {
-	db, exists := botTool.BotDB[model]
+func (botTool *BotTool) GetBotByModel(model string) *discord.ProxyBot {
+	db, exists := botTool.ProxyBotPool[model]
 	if !exists {
 		return nil
 	}
