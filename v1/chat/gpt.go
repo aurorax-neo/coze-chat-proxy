@@ -69,30 +69,32 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *d
 			content := reply[strLen:]
 			// 更新 strLen
 			strLen = len(reply)
-			apiRespObj := &apiresp.StreamObj{}
-			// id
-			apiRespObj.ID = id
-			// created
-			apiRespObj.Created = time.Now().Unix()
-			// object
-			apiRespObj.Object = "chat.completion.chunk"
-			// choices
-			delta := apiresp.StreamDeltaObj{
-				Content: content,
+			for _, v := range content {
+				apiRespObj := &apiresp.StreamObj{}
+				// id
+				apiRespObj.ID = id
+				// created
+				apiRespObj.Created = time.Now().Unix()
+				// object
+				apiRespObj.Object = "chat.completion.chunk"
+				// choices
+				delta := apiresp.StreamDeltaObj{
+					Content: string(v),
+				}
+				choices := apiresp.StreamChoiceObj{
+					Delta: delta,
+				}
+				apiRespObj.Choices = append(apiRespObj.Choices, choices)
+				// model
+				apiRespObj.Model = apiReq.Model
+				// 生成响应
+				bytes, err := v1.Obj2Bytes(apiRespObj)
+				if err != nil {
+					logger.Logger.Debug(err.Error())
+					return true
+				}
+				c.SSEvent("", " "+string(bytes))
 			}
-			choices := apiresp.StreamChoiceObj{
-				Delta: delta,
-			}
-			apiRespObj.Choices = append(apiRespObj.Choices, choices)
-			// model
-			apiRespObj.Model = apiReq.Model
-			// 生成响应
-			bytes, err := v1.Obj2Bytes(apiRespObj)
-			if err != nil {
-				logger.Logger.Debug(err.Error())
-				return true
-			}
-			c.SSEvent("", " "+string(bytes))
 			return true // 继续保持流式连接
 		case <-timer.C:
 			c.SSEvent("", " [DONE]")
