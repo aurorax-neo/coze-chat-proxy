@@ -1,0 +1,38 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Generate release notes
+        id: generate_notes
+        run: |
+          echo "::set-output name=notes::$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:'- %s')"
+        shell: bash
+
+      - name: Extract first line of commit message
+        id: extract_line
+        run: |
+          echo "::set-output name=line::$(echo "${{ github.event.head_commit.message }}" | head -n1)"
+        shell: bash
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        if: contains(github.event.head_commit.message, 'release-v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_line.outputs.line }}
+          release_name: ${{ steps.extract_line.outputs.line }}
+          body: ${{ steps.generate_notes.outputs.notes }}
+          draft: false
+          prerelease: false
