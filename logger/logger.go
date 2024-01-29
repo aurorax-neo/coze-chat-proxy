@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"coze-chat-proxy/common"
 	"coze-chat-proxy/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -12,10 +13,13 @@ import (
 var Logger *zap.Logger
 
 func init() {
+	// 获取日志文件路径
+	logPath := common.LogDir + "/log.log"
+	logPath = common.GetAbsPathAndGenerate(logPath, true, "")
 	// 配置日志输出到文件
 	zapConfig := zap.NewProductionConfig()
-	zapConfig.OutputPaths = []string{"log.log", "stdout"} // 将日志输出到文件 和 标准输出
-	zapConfig.Encoding = "console"                        // 设置日志格 json console
+	zapConfig.OutputPaths = []string{logPath, "stdout"} // 将日志输出到文件 和 标准输出
+	zapConfig.Encoding = "console"                      // 设置日志格 json console
 	var LevelErr error
 	zapConfig.Level, LevelErr = zap.ParseAtomicLevel(config.CONFIG.LogLevel) // 设置日志级别
 	if LevelErr != nil {

@@ -101,4 +101,6 @@ fabric.properties
 go.work
 
 /log.log
-/bot.json
+/data/bot.json
+/data/
+/log/

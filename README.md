@@ -104,3 +104,21 @@ curl --location --request POST 'http://127.0.0.1:8080/v1/images/generations' \
 ]
 ```
 
+### docker部署
+
+##### 1 .创建文件夹
+
+```
+mkdir -p $PWD/coze-chat-proxy
+```
+
+##### 2.拉取镜像启动
+
+###### 注：AUTH_TOKEN自行替换；tag替换为release版本号，如：0.0.1
+
+```
+docker run -itd  --name=coze-chat-proxy -p 8080:8080  -v $PWD/coze-chat-proxy:/data:/app/data -v $PWD/coze-chat-proxy/log:/app/log  -e AUTH_TOKEN=<AUTH_TOKEN> \
+registry.cn-hangzhou.aliyuncs.com/aurorax/coze-chat-proxy:<tag>
+```
+
+##### 3.修改`$PWD/coze-chat-proxy/data`目录下`bot.json`并重启容器

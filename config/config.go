@@ -1,6 +1,7 @@
 package config
 
 import (
+	"coze-chat-proxy/common"
 	"github.com/joho/godotenv"
 	"os"
 )
@@ -30,8 +31,10 @@ func init() {
 	// BOT_CONFIG
 	CONFIG.BotConfig = os.Getenv("BOT_CONFIG")
 	if CONFIG.BotConfig == "" {
-		CONFIG.BotConfig = "bot.json"
+		CONFIG.BotConfig = common.DataDir + "/bot.json"
 	}
+	//转换为绝对路径
+	CONFIG.BotConfig = common.GetAbsPathAndGenerate(CONFIG.BotConfig, true, `[]`)
 	// AUTH_TOKEN
 	CONFIG.AuthToken = os.Getenv("AUTH_TOKEN")
 	if CONFIG.AuthToken == "" {

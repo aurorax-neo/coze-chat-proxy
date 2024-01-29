@@ -31,7 +31,7 @@ COPY --from=builder /coze-chat-proxy .
 EXPOSE 8080
 
 # 工作目录
-WORKDIR /data
+WORKDIR /app
 
 # 设置入口命令
 ENTRYPOINT ["/coze-chat-proxy"]
