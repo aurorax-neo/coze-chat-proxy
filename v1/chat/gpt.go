@@ -2,6 +2,7 @@ package chat
 
 import (
 	"coze-chat-proxy/bot/discord"
+	"coze-chat-proxy/common"
 	"coze-chat-proxy/logger"
 	v1 "coze-chat-proxy/v1"
 	"coze-chat-proxy/v1/chat/apireq"
@@ -33,21 +34,31 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.ProxyBot, retryCount i
 	messageChan, stopChan := bot.ReturnChainProcessed(sentMsg.ID)
 	defer bot.CleanChans(sentMsg.ID)
 
+	// 定时器
+	timer, err := v1.SetTimer(apiReq.Stream, common.RequestOutTimeDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"detail": "abnormal timeout setting",
+		})
+		return
+	}
+
 	// 流式返回
 	if apiReq.Stream {
-		__CompletionsStream(c, apiReq, messageChan, stopChan)
+		__CompletionsStream(c, apiReq, messageChan, stopChan, timer)
 	} else { // 非流式回应
-		__CompletionsNoStream(c, apiReq, messageChan, stopChan)
+		__CompletionsNoStream(c, apiReq, messageChan, stopChan, timer)
 	}
 }
 
-func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *discordgo.MessageUpdate, stopChan chan string) {
+func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *discordgo.MessageUpdate, stopChan chan string, timer *time.Timer) {
 	// 响应id
 	id := v1.GenerateID(29)
 	strLen := 0
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case message := <-messageChan:
+			_ = v1.TimerReset(apiReq.Stream, timer, common.RequestOutTimeDuration)
 			// 如果回复为空则返回
 			reply := message.Content
 			// 如果回复为空则返回
@@ -81,8 +92,11 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *d
 				logger.Logger.Debug(err.Error())
 				return true
 			}
-			c.SSEvent("", string(bytes))
+			c.SSEvent("", " "+string(bytes))
 			return true // 继续保持流式连接
+		case <-timer.C:
+			c.SSEvent("", " [DONE]")
+			return false
 		case <-stopChan:
 			apiRespObj := &apiresp.StreamObj{}
 			// id
@@ -116,11 +130,12 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *d
 
 }
 
-func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *discordgo.MessageUpdate, stopChan chan string) {
+func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *discordgo.MessageUpdate, stopChan chan string, timer *time.Timer) {
 	content := ""
 	for {
 		select {
 		case message := <-replyChan:
+			_ = v1.TimerReset(apiReq.Stream, timer, common.RequestOutTimeDuration)
 			// 如果回复为空则返回
 			reply := message.Content
 			// 如果回复为空则返回
@@ -128,6 +143,11 @@ func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *d
 				continue
 			}
 			content = reply
+		case <-timer.C:
+			apiRespObj := &apiresp.JsonObj{}
+			// 返回响应
+			c.JSON(http.StatusOK, apiRespObj)
+			return
 		case <-stopChan:
 			completionTokens := CountTokens(content)
 			promptTokens := CountTokens(apiReq.NewMessages)
@@ -139,7 +159,7 @@ func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *d
 			// created
 			apiRespObj.Created = time.Now().Unix()
 			// object
-			apiRespObj.Object = "chat.completion.chunk"
+			apiRespObj.Object = "chat.completion"
 			// model
 			apiRespObj.Model = apiReq.Model
 			// usage

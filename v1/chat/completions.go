@@ -15,8 +15,7 @@ func Completions(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(&apiReq)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "无效的参数",
-			"success": false,
+			"detail": "Invalid parameter",
 		})
 		return
 	}
@@ -26,8 +25,7 @@ func Completions(c *gin.Context) {
 	bot := botTool1.GetBotByModel(apiReq.Model)
 	if bot == nil {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "model is not supported",
-			"success": false,
+			"detail": "model is not supported",
 		})
 		return
 	}

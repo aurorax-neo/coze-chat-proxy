@@ -3,6 +3,7 @@ package images
 import (
 	"coze-chat-proxy/botTool"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Dalle3Req struct {
@@ -18,9 +19,8 @@ func Generations(c *gin.Context) {
 
 	err := c.ShouldBindJSON(apiReq)
 	if err != nil {
-		c.JSON(200, gin.H{
-			"message": "无效的参数",
-			"success": false,
+		c.JSON(http.StatusOK, gin.H{
+			"detail": "Invalid parameter",
 		})
 		return
 	}
@@ -30,9 +30,8 @@ func Generations(c *gin.Context) {
 	// 从请求中获取 model
 	bot := botTool1.GetBotByModel(apiReq.Model)
 	if bot == nil {
-		c.JSON(200, gin.H{
-			"message": "model is not supported",
-			"success": false,
+		c.JSON(http.StatusOK, gin.H{
+			"detail": "model is not supported",
 		})
 		return
 	}
