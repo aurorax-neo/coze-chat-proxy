@@ -35,7 +35,7 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.ProxyBot) {
 	defer bot.CleanChans(sentMsg.ID)
 
 	// 定时器
-	timer, err := v1.SetTimer(apiReq.Stream, common.RequestOutTimeDuration)
+	timer, err := v1.SetTimer(common.RequestOutTimeDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": "abnormal timeout setting",
@@ -58,7 +58,7 @@ func __CompletionsStream(c *gin.Context, apiReq *apireq.Req, messageChan chan *d
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case message := <-messageChan:
-			_ = v1.TimerReset(apiReq.Stream, timer, common.RequestOutTimeDuration)
+			_ = v1.TimerReset(timer, common.StreamRequestOutTime)
 			// 如果回复为空则返回
 			reply := message.Content
 			// 如果回复为空则返回
@@ -137,7 +137,7 @@ func __CompletionsNoStream(c *gin.Context, apiReq *apireq.Req, replyChan chan *d
 	for {
 		select {
 		case message := <-replyChan:
-			_ = v1.TimerReset(apiReq.Stream, timer, common.RequestOutTimeDuration)
+			_ = v1.TimerReset(timer, common.RequestOutTime)
 			// 如果回复为空则返回
 			reply := message.Content
 			// 如果回复为空则返回

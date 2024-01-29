@@ -5,7 +5,7 @@ import "time"
 const (
 	DataDir                = "./data"
 	LogDir                 = "./log"
-	RequestOutTime         = "90"
-	StreamRequestOutTime   = "90"
-	RequestOutTimeDuration = 5 * time.Minute
+	RequestOutTime         = 90 * time.Second
+	StreamRequestOutTime   = 60 * time.Second
+	RequestOutTimeDuration = 3 * time.Minute
 )

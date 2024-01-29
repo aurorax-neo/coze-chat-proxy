@@ -48,27 +48,25 @@ func GetBufferFromByte(by []byte) (*bytes.Buffer, string, error) {
 	return &buffer, w.FormDataContentType(), nil
 }
 
-func UploadImg2PicBed(url string) string {
-	//	下载图片
-	img := DownloadImg(url)
-	if img == nil {
-		return url
+func UploadImg2PicBed(bys []byte) string {
+	if bys == nil {
+		return ""
 	}
-	buffer, contentType, err := GetBufferFromByte(img)
+	buffer, contentType, err := GetBufferFromByte(bys)
 	if err != nil {
-		return url
+		return ""
 	}
 
 	// 创建并发送请求
 	req, err := http.NewRequest("POST", "https://cdn.ipfsscan.io/api/v0/add?pin=false", buffer)
 	if err != nil {
-		return url
+		return ""
 	}
 	req.Header.Set("Content-Type", contentType)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return url
+		return ""
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -77,7 +75,7 @@ func UploadImg2PicBed(url string) string {
 	// 解析并打印响应
 	responseData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return url
+		return ""
 	}
 
 	type UploadResponse struct {
@@ -89,10 +87,10 @@ func UploadImg2PicBed(url string) string {
 	var uploadResponse UploadResponse
 	err = json.Unmarshal(responseData, &uploadResponse)
 	if err != nil {
-		return url
+		return ""
 	}
 	if uploadResponse.Hash == "" {
-		return url
+		return ""
 	}
 	imgUrl := "https://cdn.ipfsscan.io/ipfs/" + uploadResponse.Hash
 	return imgUrl

@@ -4,7 +4,6 @@ import (
 	"coze-chat-proxy/common"
 	jsoniter "github.com/json-iterator/go"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -28,39 +27,18 @@ func Obj2Bytes(obj interface{}) ([]byte, error) {
 	return bytes, nil
 }
 
-func SetTimer(isStream bool, defaultTimeout time.Duration) (*time.Timer, error) {
-	var outTimeStr string
-	if isStream {
-		outTimeStr = common.StreamRequestOutTime
-	} else {
-		outTimeStr = common.RequestOutTime
+func SetTimer(outTime time.Duration) (*time.Timer, error) {
+	if outTime == 0 {
+		outTime = common.StreamRequestOutTime
 	}
-	if outTimeStr != "" {
-		outTime, err := strconv.ParseInt(outTimeStr, 10, 64)
-		if err != nil {
+	return time.NewTimer(outTime), nil
 
-			return nil, err
-		}
-		return time.NewTimer(time.Duration(outTime) * time.Second), nil
-	}
-	return time.NewTimer(defaultTimeout), nil
 }
 
-func TimerReset(isStream bool, timer *time.Timer, defaultTimeout time.Duration) error {
-	var outTimeStr string
-	if isStream {
-		outTimeStr = common.StreamRequestOutTime
-	} else {
-		outTimeStr = common.RequestOutTime
+func TimerReset(timer *time.Timer, outTime time.Duration) error {
+	if outTime == 0 {
+		outTime = common.StreamRequestOutTime
 	}
-	if outTimeStr != "" {
-		outTime, err := strconv.ParseInt(outTimeStr, 10, 64)
-		if err != nil {
-			return err
-		}
-		timer.Reset(time.Duration(outTime) * time.Second)
-		return nil
-	}
-	timer.Reset(defaultTimeout)
+	timer.Reset(outTime)
 	return nil
 }
