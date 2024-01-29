@@ -29,5 +29,5 @@ func Completions(c *gin.Context) {
 		})
 		return
 	}
-	gpt(c, apiReq, bot, 1)
+	gpt(c, apiReq, bot)
 }

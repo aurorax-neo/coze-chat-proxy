@@ -7,10 +7,13 @@ import (
 	v1 "coze-chat-proxy/v1"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type Dalle3Resp struct {
-	Data []Dalle3RespData `json:"data"`
+	Created string           `json:"created"`
+	Data    []Dalle3RespData `json:"data"`
 }
 
 type Dalle3RespData struct {
@@ -18,7 +21,7 @@ type Dalle3RespData struct {
 	Url           string `json:"url"`
 }
 
-func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.ProxyBot, retryCount int) {
+func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.ProxyBot) {
 	sentMsg, err := bot.SendMessage(apiReq.Prompt)
 	if err != nil {
 		logger.Logger.Fatal(err.Error())
@@ -46,12 +49,14 @@ func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.ProxyBot, retryCount
 			if len(messageChan.Embeds) == 0 {
 				continue
 			}
+			url := UploadImg2PicBed(messageChan.Embeds[0].Image.URL)
 			dalle3Data := Dalle3RespData{
 				RevisedPrompt: apiReq.Prompt,
-				Url:           messageChan.Embeds[0].Image.URL,
+				Url:           url,
 			}
 			dalle3Resp := &Dalle3Resp{
-				Data: []Dalle3RespData{dalle3Data},
+				Created: strconv.FormatInt(time.Now().Unix(), 10),
+				Data:    []Dalle3RespData{dalle3Data},
 			}
 			c.JSON(http.StatusOK, dalle3Resp)
 			return

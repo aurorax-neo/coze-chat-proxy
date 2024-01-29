@@ -35,5 +35,5 @@ func Generations(c *gin.Context) {
 		})
 		return
 	}
-	dalle3(c, apiReq, bot, 1)
+	dalle3(c, apiReq, bot)
 }
