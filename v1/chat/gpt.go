@@ -21,6 +21,11 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.ProxyBot) {
 	for _, message := range apiReq.Messages {
 		newMessages += message.Content + "\n"
 	}
+	// 如果长度>2000则截断,保留最后1999个字符
+	// 2000是discord消息长度限制
+	if len(newMessages) > 2000 {
+		newMessages = newMessages[len(newMessages)-1999:]
+	}
 	apiReq.NewMessages = newMessages
 
 	sentMsg, err := bot.SendMessage(newMessages)
