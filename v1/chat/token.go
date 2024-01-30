@@ -13,7 +13,7 @@ func init() {
 	// gpt-3.5-turbo encoding
 	tke, err := tiktoken.GetEncoding("cl100k_base")
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 	Tke = tke
 

@@ -31,7 +31,7 @@ func (botTool *BotTool) __GetBots1BotFile() {
 	// 读取json文件内容
 	bytes, err := os.ReadFile(config.CONFIG.BotConfig)
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 
 	// Define a slice to hold the proxyBots
@@ -40,7 +40,7 @@ func (botTool *BotTool) __GetBots1BotFile() {
 	// Unmarshal the JSON data into the proxyBots slice
 	err = json.Unmarshal(bytes, &dcBots)
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
+		logger.Logger.Error(err.Error())
 	}
 	botTool.ProxyBotPool = make(map[string]*ProxyBotDB)
 	// Get the context

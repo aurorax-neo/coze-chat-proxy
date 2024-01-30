@@ -24,7 +24,7 @@ type Dalle3RespData struct {
 func dalle3(c *gin.Context, apiReq *Dalle3Req, bot *discord.ProxyBot) {
 	sentMsg, err := bot.SendMessage(apiReq.Prompt)
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
+		logger.Logger.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": err.Error(),
 		})

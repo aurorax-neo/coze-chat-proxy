@@ -25,7 +25,7 @@ func gpt(c *gin.Context, apiReq *apireq.Req, bot *discord.ProxyBot) {
 
 	sentMsg, err := bot.SendMessage(newMessages)
 	if err != nil {
-		logger.Logger.Fatal(err.Error())
+		logger.Logger.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"detail": err.Error(),
 		})

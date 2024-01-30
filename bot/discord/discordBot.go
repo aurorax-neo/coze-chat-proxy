@@ -42,7 +42,7 @@ func (dcBot *DcBot) StartBot(ctx context.Context, proxyBot *ProxyBot) {
 	var err error
 	dcBot.Session, err = discordgo.New("Bot " + dcBot.BotToken)
 	if err != nil {
-		logger.Logger.Fatal(fmt.Sprint("error creating DcBot bot,", err))
+		logger.Logger.Error(fmt.Sprint("error creating DcBot bot,", err))
 		return
 	}
 	// 添加到数据库
@@ -51,7 +51,7 @@ func (dcBot *DcBot) StartBot(ctx context.Context, proxyBot *ProxyBot) {
 	// 打开websocket连接并开始监听
 	err = dcBot.Session.Open()
 	if err != nil {
-		logger.Logger.Fatal(fmt.Sprint("error opening DcBot connection,", err))
+		logger.Logger.Error(fmt.Sprint("error opening DcBot connection,", err))
 		return
 	}
 	// 注册消息处理函数
@@ -66,7 +66,7 @@ func (dcBot *DcBot) StartBot(ctx context.Context, proxyBot *ProxyBot) {
 	go func() {
 		<-ctx.Done()
 		if err := dcBot.Session.Close(); err != nil {
-			logger.Logger.Fatal(fmt.Sprint("error closing DcBot bot,", err))
+			logger.Logger.Error(fmt.Sprint("error closing DcBot bot,", err))
 		}
 	}()
 
